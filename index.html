@@ -256,7 +256,7 @@
           this.price = 'Menghitung...';
 
           try {
-            const response = await fetch('http://127.0.0.1:8000/predict', {
+            const response = await fetch('http://127.0.0.1:8050/predict', {
               method: 'POST',
               headers: {
                 'accept': 'application/json',
@@ -314,7 +314,7 @@
     // Fetch and Render Scatter Plot from API
     async function renderScatterChart() {
       try {
-        const response = await fetch('http://127.0.0.1:8000/scatter');
+        const response = await fetch('http://127.0.0.1:8050/scatter');
         if (!response.ok) throw new Error('Failed to fetch scatter data');
         const data = await response.json();
 
@@ -374,7 +374,7 @@
 
     async function renderHeatmap() {
       try {
-        const response = await fetch('http://127.0.0.1:8000/heatmap');
+        const response = await fetch('http://127.0.0.1:8050/heatmap');
         if (!response.ok) throw new Error('Failed to fetch heatmap data');
         const jsonData = await response.json();
 
