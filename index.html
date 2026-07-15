@@ -256,7 +256,7 @@
           this.price = 'Menghitung...';
 
           try {
-            const response = await fetch('https://api-bd.hevi-digital.my.id/predict', {
+            const response = await fetch('https://apibd.hevi-digital.my.id/predict', {
               method: 'POST',
               headers: {
                 'accept': 'application/json',
@@ -314,7 +314,7 @@
     // Fetch and Render Scatter Plot from API
     async function renderScatterChart() {
       try {
-        const response = await fetch('https://api-bd.hevi-digital.my.id/scatter');
+        const response = await fetch('https://apibd.hevi-digital.my.id/scatter');
         if (!response.ok) throw new Error('Failed to fetch scatter data');
         const data = await response.json();
 
@@ -374,7 +374,7 @@
 
     async function renderHeatmap() {
       try {
-        const response = await fetch('https://api-bd.hevi-digital.my.id/heatmap');
+        const response = await fetch('https://apibd.hevi-digital.my.id/heatmap');
         if (!response.ok) throw new Error('Failed to fetch heatmap data');
         const jsonData = await response.json();
 
