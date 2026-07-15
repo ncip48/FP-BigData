@@ -1,30 +1,56 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>🏡 Dashboard Prediksi Harga Rumah Malang</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
-    // CRITICAL FIX: Tell Tailwind to watch for the 'dark' class on the HTML tag
     tailwind.config = {
       darkMode: 'class'
     }
   </script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.plot.ly/plotly-2.35.0.min.js" charset="utf-8"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
   <style>
     /* smooth transitions + colorful accents */
-    .card-hover { transition: transform 0.15s ease, box-shadow 0.2s; }
-    .card-hover:hover { transform: translateY(-3px); box-shadow: 0 20px 25px -5px rgba(0,0,0,0.08), 0 10px 10px -5px rgba(0,0,0,0.02); }
-    input[type="range"] { accent-color: #7c3aed; height: 6px; background: #e2e8f0; border-radius: 20px; }
-    input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 18px; height: 18px; border-radius: 50%; background: #7c3aed; cursor: pointer; }
-    .bg-soft-gradient { background: linear-gradient(145deg, #f8fafc, #f1f5f9); }
-    .glass-card { backdrop-filter: blur(2px); background: rgba(255,255,255,0.75); }
+    .card-hover {
+      transition: transform 0.15s ease, box-shadow 0.2s;
+    }
+
+    .card-hover:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 10px 10px -5px rgba(0, 0, 0, 0.02);
+    }
+
+    .bg-soft-gradient {
+      background: linear-gradient(145deg, #f8fafc, #f1f5f9);
+    }
+
+    .glass-card {
+      backdrop-filter: blur(2px);
+      background: rgba(255, 255, 255, 0.75);
+    }
+
+    /* Remove arrows from number input */
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    input[type="number"] {
+      -moz-appearance: textfield;
+    }
   </style>
 </head>
-<body class="bg-slate-50 text-slate-800 dark:bg-slate-950 dark:text-slate-100 font-sans antialiased transition-colors duration-200" x-data="app()">
+
+<body
+  class="bg-slate-50 text-slate-800 dark:bg-slate-950 dark:text-slate-100 font-sans antialiased transition-colors duration-200"
+  x-data="app()">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 py-6">
     <div class="flex flex-wrap justify-between items-center gap-3">
       <div class="flex items-center gap-3">
@@ -34,29 +60,31 @@
         <div>
           <h1 class="text-3xl font-extrabold tracking-tight text-slate-800 dark:text-white flex items-center gap-2">
             <span>Prediksi Harga</span>
-            <span class="bg-gradient-to-r from-amber-400 to-rose-400 text-transparent bg-clip-text">Malang</span>
+            <span class="bg-gradient-to-r from-amber-400 to-rose-400 text-transparent bg-clip-text">Rumah Malang</span>
           </h1>
           <p class="text-slate-500 dark:text-slate-400 text-sm flex items-center gap-1">
-            <i class="fas fa-chart-line text-emerald-500"></i> Regresi Linier Sederhana & Berganda
+            <i class="fas fa-chart-line text-emerald-500"></i> Dashboard Prediksi Properti
           </p>
         </div>
       </div>
-      <button @click="dark=!dark; document.documentElement.classList.toggle('dark'); updateChartsTheme()" 
-              class="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-white dark:bg-slate-200 dark:hover:bg-slate-300 dark:text-slate-900 rounded-full shadow-md transition flex items-center gap-2 text-sm font-medium">
-        <i :class="dark ? 'fas fa-sun text-amber-500' : 'fas fa-moon'"></i> 
+      <button @click="dark=!dark; document.documentElement.classList.toggle('dark'); updateChartsTheme()"
+        class="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-white dark:bg-slate-200 dark:hover:bg-slate-300 dark:text-slate-900 rounded-full shadow-md transition flex items-center gap-2 text-sm font-medium">
+        <i :class="dark ? 'fas fa-sun text-amber-500' : 'fas fa-moon'"></i>
         <span x-text="dark ? 'Terang' : 'Gelap'"></span>
       </button>
     </div>
 
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-7">
       <template x-for="(c, idx) in cards" :key="idx">
-        <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 p-5 card-hover transition-all flex items-start gap-4">
-          <div class="rounded-xl p-3 text-white flex items-center justify-center" 
-               :style="`background: ${c.bg || '#4f46e5'}`">
+        <div
+          class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 p-5 card-hover transition-all flex items-start gap-4">
+          <div class="rounded-xl p-3 text-white flex items-center justify-center"
+            :style="`background: ${c.bg || '#4f46e5'}`">
             <i :class="c.icon" class="text-xl w-6 text-center"></i>
           </div>
           <div>
-            <div class="text-slate-400 dark:text-slate-500 text-xs font-semibold uppercase tracking-wider" x-text="c.label"></div>
+            <div class="text-slate-400 dark:text-slate-500 text-xs font-semibold uppercase tracking-wider"
+              x-text="c.label"></div>
             <div class="text-2xl font-bold text-slate-800 dark:text-white mt-0.5" x-text="c.value"></div>
             <div class="text-xs text-slate-400 dark:text-slate-500 flex items-center gap-1 mt-0.5" x-show="c.sub">
               <i class="fas fa-arrow-up text-emerald-500 text-[10px]"></i> <span x-text="c.sub"></span>
@@ -67,50 +95,49 @@
     </div>
 
     <div class="grid lg:grid-cols-3 gap-6 mt-7">
-      <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-md border border-slate-100 dark:border-slate-800 p-6 transition-all">
-        <div class="flex items-center gap-2 text-indigo-700 dark:text-indigo-400 font-bold text-lg border-b border-slate-100 dark:border-slate-800 pb-3 mb-4">
+      <!-- Input Panel -->
+      <div
+        class="bg-white dark:bg-slate-900 rounded-2xl shadow-md border border-slate-100 dark:border-slate-800 p-6 transition-all">
+        <div
+          class="flex items-center gap-2 text-indigo-700 dark:text-indigo-400 font-bold text-lg border-b border-slate-100 dark:border-slate-800 pb-3 mb-5">
           <i class="fas fa-sliders-h text-indigo-500"></i> <span>Prediksi Interaktif</span>
         </div>
-        
-        <label class="text-sm font-semibold text-slate-600 dark:text-slate-300 flex items-center gap-2"><i class="fas fa-cubes text-amber-500"></i> Model</label>
-        <select x-model="model" class="w-full border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 mt-1 mb-4 bg-slate-50/80 dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-indigo-300 transition">
-          <option value="simple" class="dark:bg-slate-800">📈 Regresi Sederhana</option>
-          <option value="multiple" class="dark:bg-slate-800">📊 Regresi Berganda</option>
-        </select>
 
         <div class="space-y-5">
           <div>
-            <div class="flex justify-between text-sm font-medium text-slate-700 dark:text-slate-300">
-              <span><i class="fas fa-vector-square text-sky-500"></i> Luas Bangunan</span>
-              <span class="bg-indigo-50 dark:bg-indigo-950/50 px-3 py-0.5 rounded-full text-indigo-700 dark:text-indigo-300" x-text="building + ' m²'"></span>
-            </div>
-            <input type="range" min="20" max="500" x-model="building" @input="predict()" class="w-full mt-1 dark:bg-slate-700">
+            <label class="text-sm font-medium text-slate-700 dark:text-slate-300 flex items-center gap-2 mb-1.5">
+              <i class="fas fa-vector-square text-sky-500"></i> Luas Bangunan (m²)
+            </label>
+            <!-- Using debounce so it doesn't spam the API while the user is typing -->
+            <input type="number" min="0" x-model="building" @input.debounce.500ms="predict()" placeholder="Contoh: 120"
+              class="w-full border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 bg-slate-50/80 dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition placeholder-slate-400">
           </div>
 
-          <div x-show="model=='multiple'" x-transition>
-            <div class="flex justify-between text-sm font-medium text-slate-700 dark:text-slate-300">
-              <span><i class="fas fa-ruler-combined text-emerald-500"></i> Luas Tanah</span>
-              <span class="bg-emerald-50 dark:bg-emerald-950/50 px-3 py-0.5 rounded-full text-emerald-700 dark:text-emerald-300" x-text="land + ' m²'"></span>
-            </div>
-            <input type="range" min="30" max="700" x-model="land" @input="predict()" class="w-full mt-1 dark:bg-slate-700">
+          <div>
+            <label class="text-sm font-medium text-slate-700 dark:text-slate-300 flex items-center gap-2 mb-1.5">
+              <i class="fas fa-ruler-combined text-emerald-500"></i> Luas Tanah (m²)
+            </label>
+            <input type="number" min="0" x-model="land" @input.debounce.500ms="predict()" placeholder="Contoh: 100"
+              class="w-full border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 bg-slate-50/80 dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-400 transition placeholder-slate-400">
           </div>
         </div>
 
-        <div class="mt-6 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-2xl p-5 shadow-md">
+        <div class="mt-8 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-2xl p-5 shadow-md">
           <div class="text-sm opacity-80 flex items-center gap-1"><i class="fas fa-coins"></i> Estimasi Harga</div>
           <div class="text-3xl font-extrabold tracking-tight mt-1" x-text="price"></div>
-          <div class="text-xs opacity-70 mt-0.5"><i class="far fa-calendar-alt"></i> update real-time</div>
-        </div>
-        <div class="mt-3 text-xs text-slate-400 dark:text-slate-500 flex gap-3">
-          <span><i class="fas fa-database text-indigo-300"></i> data latih: 400</span>
-          <span><i class="fas fa-flask text-amber-300"></i> uji: 100</span>
+          <div class="text-xs opacity-70 mt-0.5"><i class="far fa-calendar-alt"></i> Real-time API</div>
         </div>
       </div>
 
-      <div class="lg:col-span-2 bg-white dark:bg-slate-900 rounded-2xl shadow-md border border-slate-100 dark:border-slate-800 p-5">
-        <div class="flex items-center gap-2 text-slate-700 dark:text-slate-200 font-semibold border-b border-slate-100 dark:border-slate-800 pb-3">
+      <!-- Charts & Tables Panel -->
+      <div
+        class="lg:col-span-2 bg-white dark:bg-slate-900 rounded-2xl shadow-md border border-slate-100 dark:border-slate-800 p-5">
+        <div
+          class="flex items-center gap-2 text-slate-700 dark:text-slate-200 font-semibold border-b border-slate-100 dark:border-slate-800 pb-3">
           <i class="fas fa-chart-bar text-indigo-500"></i> <span>Perbandingan Metrik</span>
-          <span class="ml-auto text-xs bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-full text-slate-500 dark:text-slate-400"><i class="far fa-circle-check text-emerald-500"></i> R² terbaik 0.49</span>
+          <span
+            class="ml-auto text-xs bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-full text-slate-500 dark:text-slate-400"><i
+              class="far fa-circle-check text-emerald-500"></i> R² terbaik 0.49</span>
         </div>
         <div class="mt-2 h-96">
           <canvas id="compare"></canvas>
@@ -118,25 +145,50 @@
       </div>
     </div>
 
+    <!-- MODIFIED SECTION: Added lg:row-span-2 to Heatmap so the grid forms 2 columns x 2 rows correctly -->
     <div class="grid lg:grid-cols-2 gap-6 mt-7">
+
+      <!-- 1. Actual vs Prediksi (Top Left) -->
       <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-md border border-slate-100 dark:border-slate-800 p-5">
-        <div class="flex items-center gap-2 text-slate-700 dark:text-slate-200 font-semibold border-b border-slate-100 dark:border-slate-800 pb-3">
+        <div
+          class="flex items-center gap-2 text-slate-700 dark:text-slate-200 font-semibold border-b border-slate-100 dark:border-slate-800 pb-3">
           <i class="fas fa-chart-line text-rose-500"></i> <span>Actual vs Prediksi</span>
-          <span class="ml-auto text-xs bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-full text-slate-500 dark:text-slate-400"><i class="fas fa-circle text-sky-400"></i> data uji</span>
+          <span
+            class="ml-auto text-xs bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-full text-slate-500 dark:text-slate-400"><i
+              class="fas fa-circle text-sky-400"></i> data uji</span>
         </div>
-        <div class="mt-2 h-48">
+        <div class="mt-2 h-80">
           <canvas id="scatter"></canvas>
         </div>
       </div>
 
+      <!-- 2. Heatmap Section (Right Side, Spanning 2 Rows) -->
+      <div
+        class="bg-white dark:bg-slate-900 rounded-2xl shadow-md border border-slate-100 dark:border-slate-800 p-5 lg:row-span-2">
+        <div
+          class="flex items-center gap-2 text-slate-700 dark:text-slate-200 font-semibold border-b border-slate-100 dark:border-slate-800 pb-3">
+          <i class="fas fa-th text-purple-500"></i> <span>Korelasi Fitur (Heatmap)</span>
+          <span
+            class="ml-auto text-xs bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-full text-slate-500 dark:text-slate-400">
+            <i class="fas fa-fire text-orange-500"></i> Matriks Korelasi
+          </span>
+        </div>
+        <div class="mt-4 aspect-square mx-auto">
+          <div id="heatmapCanvas" style="width: 100%; height: 550px;"></div>
+        </div>
+      </div>
+
+      <!-- 3. Evaluasi Model (Bottom Left) -->
       <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-md border border-slate-100 dark:border-slate-800 p-5">
-        <div class="flex items-center gap-2 text-slate-700 dark:text-slate-200 font-semibold border-b border-slate-100 dark:border-slate-800 pb-3">
+        <div
+          class="flex items-center gap-2 text-slate-700 dark:text-slate-200 font-semibold border-b border-slate-100 dark:border-slate-800 pb-3">
           <i class="fas fa-table text-teal-500"></i> <span>Evaluasi Model</span>
         </div>
         <div class="overflow-x-auto mt-3">
           <table class="w-full text-sm">
             <thead>
-              <tr class="border-b border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 uppercase text-xs tracking-wider">
+              <tr
+                class="border-b border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 uppercase text-xs tracking-wider">
                 <th class="py-2 text-left"><i class="fas fa-cubes mr-1"></i> Model</th>
                 <th class="py-2 text-right"><i class="fas fa-arrow-left text-amber-400"></i> MAE</th>
                 <th class="py-2 text-right"><i class="fas fa-arrow-left text-rose-400"></i> RMSE</th>
@@ -145,13 +197,17 @@
             </thead>
             <tbody class="divide-y divide-slate-100 dark:divide-slate-800 text-slate-700 dark:text-slate-300">
               <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition">
-                <td class="py-2.5 font-medium flex items-center gap-2"><span class="bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 p-1 rounded-lg"><i class="fas fa-signal"></i></span> Sederhana</td>
+                <td class="py-2.5 font-medium flex items-center gap-2"><span
+                    class="bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 p-1 rounded-lg"><i
+                      class="fas fa-signal"></i></span> Sederhana</td>
                 <td class="text-right font-mono">0.50</td>
                 <td class="text-right font-mono">0.71</td>
                 <td class="text-right font-mono text-emerald-600 dark:text-emerald-400">0.47</td>
               </tr>
               <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition bg-indigo-50/40 dark:bg-indigo-950/20">
-                <td class="py-2.5 font-medium flex items-center gap-2"><span class="bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300 p-1 rounded-lg"><i class="fas fa-layer-group"></i></span> Berganda</td>
+                <td class="py-2.5 font-medium flex items-center gap-2"><span
+                    class="bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300 p-1 rounded-lg"><i
+                      class="fas fa-layer-group"></i></span> Berganda</td>
                 <td class="text-right font-mono">0.48</td>
                 <td class="text-right font-mono">0.69</td>
                 <td class="text-right font-mono text-emerald-600 dark:text-emerald-400 font-bold">0.49</td>
@@ -159,66 +215,69 @@
             </tbody>
           </table>
         </div>
-        <div class="mt-3 text-[10px] text-slate-400 dark:text-slate-500 flex items-center gap-4 border-t border-slate-100 dark:border-slate-800 pt-2">
+        <div
+          class="mt-3 text-[10px] text-slate-400 dark:text-slate-500 flex items-center gap-4 border-t border-slate-100 dark:border-slate-800 pt-2">
           <span><i class="fas fa-check-circle text-emerald-400"></i> best R²: 0.49 (multiple)</span>
-          <span><i class="fas fa-database text-indigo-300"></i> total sampel: 500</span>
+          <span><i class="fas fa-database text-indigo-300"></i> total sampel: 2040</span>
         </div>
       </div>
+
     </div>
 
-    <div class="mt-8 text-xs text-slate-400 dark:text-slate-500 border-t border-slate-200/70 dark:border-slate-800 pt-4 flex justify-between">
+    <div
+      class="mt-8 text-xs text-slate-400 dark:text-slate-500 border-t border-slate-200/70 dark:border-slate-800 pt-4 flex justify-between">
       <span><i class="fas fa-code text-indigo-300"></i> dashboard interaktif · Malang</span>
-      <span><i class="fas fa-rotate-right text-slate-300 dark:text-slate-600"></i> data sintetis</span>
+      <span><i class="fas fa-rotate-right text-slate-300 dark:text-slate-600"></i> data terhubung ke API</span>
     </div>
   </div>
 
   <script>
-    // Global references for chart rendering theme dynamic changes
     let compareChart, scatterChart;
 
     function app() {
       return {
         dark: false,
-        model: 'multiple',
-        building: 120,
-        land: 180,
-        price: 'Menghitung...', // Teks loading sementara API merespon
+        building: 0, // Default building size
+        land: 0, // Default land size
+        price: 'Menghitung...',
         cards: [
-          { label: 'Total Data', value: '2040', icon: 'fas fa-database', bg: 'linear-gradient(135deg,#6366f1,#8b5cf6)' }, // Disesuaikan dengan info df.shape notebook 
+          { label: 'Total Data', value: '2040', icon: 'fas fa-database', bg: 'linear-gradient(135deg,#6366f1,#8b5cf6)' },
           { label: 'Training', value: '1632', icon: 'fas fa-users-gear', bg: 'linear-gradient(135deg,#0ea5e9,#3b82f6)' },
           { label: 'Testing', value: '408', icon: 'fas fa-flask', bg: 'linear-gradient(135deg,#f59e0b,#f97316)' },
           { label: 'R² Terbaik', value: '0.49', icon: 'fas fa-trophy', bg: 'linear-gradient(135deg,#ec4899,#f43f5e)', sub: '+0.02' }
         ],
-        // Method diubah menjadi async untuk API call
         async predict() {
+          // If inputs are empty, don't ping API
+          if (!this.building || !this.land) {
+            this.price = 'Menunggu Input...';
+            return;
+          }
+
+          this.price = 'Menghitung...';
+
           try {
-            // Tembak endpoint FastAPI Python
-            const response = await fetch('http://localhost:8000/predict', {
+            const response = await fetch('http://127.0.0.1:8000/predict', {
               method: 'POST',
               headers: {
+                'accept': 'application/json',
                 'Content-Type': 'application/json'
               },
               body: JSON.stringify({
-                model_type: this.model,
-                building_size: parseFloat(this.building),
-                land_size: parseFloat(this.land)
+                land_size_m2: parseFloat(this.land),
+                building_size_m2: parseFloat(this.building)
               })
             });
-            
+
             if (!response.ok) throw new Error('API Error');
-            
+
             const data = await response.json();
-            
-            // Format respon Rupiah 
-            this.price = 'Rp ' + data.predicted_price.toLocaleString('id-ID', { maximumFractionDigits: 0 });
-            
+
+            // Mengambil langsung nilai string dari API JSON 
+            this.price = data.formatted_price;
+
           } catch (error) {
             console.error("Gagal memanggil API:", error);
-            // Fallback (jika backend mati, gunakan dummy logic)
-            let p = this.model === 'simple'
-              ? this.building * 12
-              : this.building * 10 + this.land * 3;
-            this.price = 'Rp ' + (p * 1000000).toLocaleString('id-ID') + ' (Offline)';
+            this.price = 'API Offline';
           }
         }
       }
@@ -245,12 +304,152 @@
         scatterChart.options.scales.y.ticks.color = textColor;
         scatterChart.options.scales.x.title.color = textColor;
         scatterChart.options.scales.y.title.color = textColor;
+        scatterChart.options.plugins.legend.labels.color = textColor;
         scatterChart.update();
       }
     }
 
-    document.addEventListener('alpine:init', () => {});
-    window.addEventListener('load', function() {
+    document.addEventListener('alpine:init', () => { });
+
+    // Fetch and Render Scatter Plot from API
+    async function renderScatterChart() {
+      try {
+        const response = await fetch('http://127.0.0.1:8000/scatter');
+        if (!response.ok) throw new Error('Failed to fetch scatter data');
+        const data = await response.json();
+
+        const ctx2 = document.getElementById('scatter').getContext('2d');
+        scatterChart = new Chart(ctx2, {
+          type: 'scatter',
+          data: {
+            datasets: [
+              {
+                label: 'Data Aktual',
+                data: data.actual,
+                backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                borderColor: '#3b82f6',
+                pointRadius: 4,
+                pointHoverRadius: 6,
+                order: 2  // <--- Higher number means drawn at the back/bottom
+              },
+              {
+                label: 'Prediksi Model',
+                data: data.predicted,
+                // Tip: You can increase the opacity from 0.6 to 1.0 here 
+                // to make the prediction dots stand out even more on top
+                backgroundColor: 'rgba(249, 115, 22, 1)',
+                borderColor: '#ea580c',
+                pointRadius: 4,
+                pointHoverRadius: 6,
+                order: 1  // <--- Lower number means drawn at the front/top
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: true, labels: { color: '#475569', usePointStyle: true } },
+              tooltip: { callbacks: { label: (ctx) => `(${ctx.parsed.x} m², ${ctx.parsed.y})` } }
+            },
+            scales: {
+              x: {
+                title: { display: true, text: 'Luas Bangunan (m²)', font: { size: 11 }, color: '#475569' },
+                grid: { color: '#f1f5f9' },
+                ticks: { color: '#475569' }
+              },
+              y: {
+                title: { display: true, text: 'Log Harga', font: { size: 11 }, color: '#475569' },
+                grid: { color: '#f1f5f9' },
+                ticks: { color: '#475569' }
+              }
+            }
+          }
+        });
+        updateChartsTheme(); // Apply theme dynamically after render
+      } catch (error) {
+        console.error("Scatter rendering error:", error);
+      }
+    }
+
+    async function renderHeatmap() {
+      try {
+        const response = await fetch('http://127.0.0.1:8000/heatmap');
+        if (!response.ok) throw new Error('Failed to fetch heatmap data');
+        const jsonData = await response.json();
+
+        const labels = jsonData.labels;
+        const n = labels.length;
+
+        // Format data into a 2D matrix for Plotly's z-axis
+        const zData = Array.from({ length: n }, () => Array(n).fill(0));
+
+        jsonData.data.forEach(item => {
+          const xIdx = labels.indexOf(item.x);
+          const yIdx = labels.indexOf(item.y);
+          if (xIdx !== -1 && yIdx !== -1) {
+            zData[yIdx][xIdx] = item.v;
+          }
+        });
+
+        const annotations = [];
+        for (let i = 0; i < n; i++) {
+          for (let j = 0; j < n; j++) {
+            const val = zData[i][j];
+            annotations.push({
+              x: labels[j],
+              y: labels[i],
+              text: val.toFixed(2),
+              font: {
+                family: 'sans-serif',
+                size: 13,
+                color: 'black'
+              },
+              showarrow: false
+            });
+          }
+        }
+
+        const data = [{
+          z: zData,
+          x: labels,
+          y: labels,
+          type: 'heatmap',
+          colorscale: 'Viridis',
+          showscale: true,
+          xgap: 1,
+          ygap: 1,
+          colorbar: {
+            title: { text: '', side: 'right' },
+            thickness: 25
+          },
+          hovertemplate: '%{x} vs %{y}<br>Korelasi: %{z:.3f}<extra></extra>'
+        }];
+
+        const layout = {
+          title: {
+            text: 'Heatmap Korelasi Variabel Harga',
+            font: { size: 14, family: 'sans-serif', color: '#475569' }
+          },
+          xaxis: { title: '', tickangle: -45, side: 'bottom', tickfont: { color: '#475569' } },
+          yaxis: { title: '', autorange: 'reversed', tickfont: { color: '#475569' } },
+          annotations: annotations,
+          margin: { l: 120, r: 50, b: 100, t: 50 },
+          autosize: true,
+          paper_bgcolor: 'rgba(0,0,0,0)', // Makes background transparent
+          plot_bgcolor: 'rgba(0,0,0,0)'
+        };
+
+        Plotly.newPlot('heatmapCanvas', data, layout, { responsive: true });
+
+      } catch (error) {
+        console.error("Heatmap rendering error:", error);
+      }
+    }
+
+    // MAIN INITIALIZATION ON LOAD
+    window.addEventListener('load', function () {
+      // Trigger initial prediction
       setTimeout(() => {
         const el = document.querySelector('[x-data]');
         if (el && el.__x && el.__x.$data) {
@@ -258,7 +457,7 @@
         }
       }, 100);
 
-      // CHARTS INITIALIZATION
+      // 1. Initialize Compare Chart (Static data for metrics)
       const ctx1 = document.getElementById('compare').getContext('2d');
       compareChart = new Chart(ctx1, {
         type: 'bar',
@@ -283,41 +482,13 @@
         }
       });
 
-      const ctx2 = document.getElementById('scatter').getContext('2d');
-      const scatterData = [
-        { x: 1.0, y: 1.05 }, { x: 2.0, y: 1.9 }, { x: 3.0, y: 3.1 },
-        { x: 4.0, y: 4.2 }, { x: 5.0, y: 4.8 }, { x: 1.5, y: 1.6 },
-        { x: 2.5, y: 2.7 }, { x: 3.5, y: 3.6 }, { x: 4.5, y: 4.4 }
-      ];
-      scatterChart = new Chart(ctx2, {
-        type: 'scatter',
-        data: {
-          datasets: [{
-            label: 'Prediksi vs Aktual',
-            data: scatterData,
-            backgroundColor: '#818cf8',
-            borderColor: '#4f46e5',
-            pointRadius: 6,
-            pointHoverRadius: 9
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { display: false },
-            tooltip: { callbacks: { label: (ctx) => `(${ctx.parsed.x}, ${ctx.parsed.y})` } }
-          },
-          scales: {
-            x: { title: { display: true, text: 'Actual (normalized)', font: { size: 9 }, color: '#475569' }, grid: { color: '#f1f5f9' }, ticks: { color: '#475569' } },
-            y: { title: { display: true, text: 'Prediction', font: { size: 9 }, color: '#475569' }, grid: { color: '#f1f5f9' }, ticks: { color: '#475569' } }
-          }
-        }
-      });
-      
-      // Sync initial runtime state if browser pre-sets preference
+      // 2. Fetch and initialize Scatter and Heatmap via APIs
+      renderScatterChart();
+      renderHeatmap();
+
       updateChartsTheme();
     });
   </script>
 </body>
+
 </html>
